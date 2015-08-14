@@ -6,11 +6,11 @@ command methods
 @author: Administrator
 '''
 import paramiko
-import pexpect
+#import pexpect
 import logging
 
 paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
-paramiko.util.log_to_file('/tmp/ssh.log')
+#paramiko.util.log_to_file('/tmp/ssh.log')
 
 def ssh2(host,cmd):  
     try:
@@ -121,6 +121,8 @@ def sftp2(hostname,username,password,localfile,remotefile):
         
 def establishtrust(ip,hostname):
     
+    return 0
+"""    
     pexpect.TIMEOUT(5)
     #append hosts info to /etc/hosts
     logging.info(hostname)
@@ -147,3 +149,4 @@ def establishtrust(ip,hostname):
                                                    
     except pexpect.EOF,pexpect.TIMEOUT:
         ssh_root.close()
+"""

@@ -35,9 +35,9 @@ def welogic_deploy(data_req):
             data_txt_app.append({'host_id':data['host_id'],'hostname':hostname,'area':data['area'],'ip':data['ip'],'username':username,'password':password,'module':module,'instance':data['instance'],'primary':'','console_port':data['console_port']})
     
     '''
-        deploy step:
+        cloudops step:
         1.write text file
-        2.copy file to deploy host
+        2.copy file to cloudops host
         3.excute shell scripts  
     '''
     #web server
@@ -52,7 +52,7 @@ def welogic_deploy(data_req):
                 cmd = cmd[:-2]
                 cmd = r'cd /app/'+data_txt_web[i]['username']+'/;echo "'+ cmd + '" > data.txt'                
                
-                #set primary host for deploy
+                #set primary host for cloudops
                 data_txt_web[i]['primary'] = 'primary'
                 #var 
                 host_ip = data_txt_web[i]['ip']
@@ -68,13 +68,13 @@ def welogic_deploy(data_req):
                     sftp2(host_ip,username,password,'/app/testweb/bak/TEMPLATE.tar','/app/'+username+'/TEMPLATE.tar')
                     #tar xvf file name and run 3 scripts
                     cmd_deploy_step1 = r'cd /app/'+username+';tar xf TEMPLATE.tar;source .cshrc;sh APP.sh;'\
-                                 'cp test.war /app/'+username+'/deploy/applications/'+module+'/;'\
-                                 'cd deploy/scripts;sh 1_envinitall.sh >deploy.log;'
+                                 'cp test.war /app/'+username+'/cloudops/applications/'+module+'/;'\
+                                 'cd cloudops/scripts;sh 1_envinitall.sh >cloudops.log;'
                     
                     ssh2_deploy(host_ip,username,password,cmd_deploy_step1)
                     
                     while True:
-                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/deploy/scripts;grep setup1 deploy.log')
+                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/cloudops/scripts;grep setup1 cloudops.log')
                         logging.info(result)
                         logging.info(len(result))
                         if (len(result)==web_server_count):
@@ -92,23 +92,23 @@ def welogic_deploy(data_req):
                     
                     cmd_web_machinfo = cmd_web_machinfo[:-2]
                     cmd_version_web_machinfo = cmd_version_web_machinfo[:-2]
-                    # run DEP.sh for deploy programe
+                    # run DEP.sh for cloudops programe
                     cmd_run_deploy = r'cd /app/'+username+'/; sh DEP.sh;cd deploy_all/;echo "' + cmd_web_machinfo +'" > web-machinfo.txt;echo "' + cmd_version_web_machinfo +'" > version-web-machinfo.txt'
                     ssh2_deploy(host_ip,username,password,cmd_run_deploy)
                     #run step 2 and step 3
-                    ssh2_deploy(host_ip,username,password,r'cd /app/'+username+'/deploy/scripts;sh 2_createdomain.sh >>deploy.log;')
+                    ssh2_deploy(host_ip,username,password,r'cd /app/'+username+'/cloudops/scripts;sh 2_createdomain.sh >>cloudops.log;')
                     
                     while True:
-                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/deploy/scripts;grep setup2 deploy.log')
+                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/cloudops/scripts;grep setup2 cloudops.log')
                         if (len(result)==web_server_count):
                             break;
                         else:
                             sleep(30)
                     
-                    ssh2_deploy(host_ip,username,password,r'cd /app/'+username+'/deploy/scripts;sh 3_deployappall.sh >>deploy.log;')  
+                    ssh2_deploy(host_ip,username,password,r'cd /app/'+username+'/cloudops/scripts;sh 3_deployappall.sh >>cloudops.log;')  
                     
                     while True:
-                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/deploy/scripts;grep setup3 deploy.log')
+                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/cloudops/scripts;grep setup3 cloudops.log')
                         if (len(result)==web_server_count):
                             break;
                         else:
@@ -126,7 +126,7 @@ def welogic_deploy(data_req):
                 for info in data_txt_app:
                     cmd = cmd + info['area'] + ' ' + info['ip'] + ' ' +info['username']+ ' ' + info['password'] + ' '  + info['module'] + ' /app/mw test.war  ' + info['instance'] +' '+info['console_port'] +' \\n'
                 cmd = r'cd /app/'+data_txt_app[i]['username']+';echo "'+ cmd + ' " > data.txt' 
-                #set primary host for deploy
+                #set primary host for cloudops
                 data_txt_app[i]['primary'] = 'primary'                
                 
                 #var 
@@ -143,13 +143,13 @@ def welogic_deploy(data_req):
                     sftp2(host_ip,username,password,'/app/testweb/bak/TEMPLATE.tar','/app/'+username+'/TEMPLATE.tar')
                     
                     cmd_deploy = 'cd /app/'+username+';tar xf TEMPLATE.tar;source .cshrc;sh APP.sh;'\
-                                 'cp test.war /app/'+username+'/deploy/applications/'+module+'/;'\
-                                 'cd deploy/scripts;sh 1_envinitall.sh > deploy.log;'
+                                 'cp test.war /app/'+username+'/cloudops/applications/'+module+'/;'\
+                                 'cd cloudops/scripts;sh 1_envinitall.sh > cloudops.log;'
     
                     ssh2_deploy(host_ip,username,password,cmd_deploy)
                     
                     while True:
-                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/deploy/scripts;grep setup1 deploy.log')
+                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/cloudops/scripts;grep setup1 cloudops.log')
                         logging.info(result)
                         logging.info(len(result))
                         if (len(result)==app_server_count):
@@ -167,23 +167,23 @@ def welogic_deploy(data_req):
                     
                     cmd_app_machinfo = cmd_app_machinfo[:-2]
                     cmd_version_app_machinfo = cmd_version_app_machinfo[:-2]
-                    # run DEP.sh for deploy programe
+                    # run DEP.sh for cloudops programe
                     cmd_run_deploy = r'cd /app/'+username+'/; sh DEP.sh;cd deploy_all/;echo "' + cmd_app_machinfo +'" > app-machinfo.txt;echo "' + cmd_version_app_machinfo +'" > version-app-machinfo.txt'
                     ssh2_deploy(host_ip,username,password,cmd_run_deploy)
                     #run step 2 and step 3
-                    ssh2_deploy(host_ip,username,password,r'cd /app/'+username+'/deploy/scripts;sh 2_createdomain.sh >>deploy.log;')
+                    ssh2_deploy(host_ip,username,password,r'cd /app/'+username+'/cloudops/scripts;sh 2_createdomain.sh >>cloudops.log;')
     
                     while True:
-                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/deploy/scripts;grep setup2 deploy.log')
+                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/cloudops/scripts;grep setup2 cloudops.log')
                         if (len(result)==app_server_count):
                             break;
                         else:
                             sleep(30)
                     
-                    ssh2_deploy(host_ip,username,password,r'cd /app/'+username+'/deploy/scripts;sh 3_deployappall.sh >>deploy.log;')  
+                    ssh2_deploy(host_ip,username,password,r'cd /app/'+username+'/cloudops/scripts;sh 3_deployappall.sh >>cloudops.log;')  
                     
                     while True:
-                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/deploy/scripts;grep setup3 deploy.log')
+                        result = ssh2_deploy(host_ip,username,password, r'cd /app/'+username+'/cloudops/scripts;grep setup3 cloudops.log')
                         if (len(result)==app_server_count):
                             break;
                         else:
@@ -205,4 +205,4 @@ def welogic_deploy(data_req):
             app_data.append(application(host_id=deploy_info['host_id'],area=deploy_info['area'],middleware='weblogic',module=deploy_info['module'],username=deploy_info['username'],console_port=deploy_info['console_port'],instance_num=deploy_info['instance'],package='test.war',primary=deploy_info['primary'],create_date=today,status='deployed'))
     application.objects.bulk_create(app_data)
     
-    #run startup scripts and check the deploy status    
+    #run startup scripts and check the cloudops status    

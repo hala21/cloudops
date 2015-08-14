@@ -16,7 +16,7 @@ os.environ['NLS_LANG'] = 'AMERICAN_AMERICA.ZHS16GBK'
 import cx_Oracle
 import mysql.connector
 from datetime import datetime,timedelta
-import pexpect
+#import pexpect
 import logging
 
 today = (datetime.now().date()).strftime('%Y-%m-%d')
@@ -35,7 +35,7 @@ def getdatafromcmdb():
 
 def putdatatodb(cmdb):
     try:
-        conn = mysql.connector.connect(host='10.78.200.62',user='deploy',password='deploy',database='deploy',charset='utf8')
+        conn = mysql.connector.connect(host='10.78.200.62',user='cloudops',password='cloudops',database='cloudops',charset='utf8')
         cursor = conn.cursor(buffered=True)
         cursor.execute("SET NAMES utf8")
         cursor.execute("SET CHARACTER_SET_CLIENT=utf8")
@@ -77,7 +77,8 @@ def putdatatodb(cmdb):
         print "Mysql Error %d: %s" % (e.args[0], e.args[1])
     
 def establishtrust(ip,hostname):
-    
+    return 0
+"""    
     pexpect.TIMEOUT(5)
     #append hosts info to /etc/hosts
     hostinfo = pexpect.spawn("/usr/bin/grep %s /etc/hosts" % (hostname))
@@ -99,10 +100,11 @@ def establishtrust(ip,hostname):
             
     hostinfo.close()
     ssh_copy.close()
-        
+"""
+            
 def dealhosttrust():
     try:
-        conn = mysql.connector.connect(host='10.78.200.62',user='deploy',password='deploy',database='deploy',charset='utf8')
+        conn = mysql.connector.connect(host='10.78.200.62',user='cloudops',password='cloudops',database='cloudops',charset='utf8')
         cursor = conn.cursor(buffered=True)
         SELECT_DB = ("SELECT host_ip,vhost_name from application_vhost WHERE date_format(create_date,'%Y-%m-%d') BETWEEN '"+today+"' AND '"+(datetime.now().date() + timedelta(days = 1)).strftime('%Y-%m-%d')+"'")
         cursor.execute(SELECT_DB)

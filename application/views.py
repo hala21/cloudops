@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from models import *
 import json
 from weblogic import welogic_deploy
+from tomcat import tomcat_deploy
 from utils import ssh2,sftp2, ssh2_deploy, establishtrust,ssh2_deploy_log,ssh2_trust
 from datetime import datetime
 from time import sleep
@@ -54,9 +55,11 @@ def deploy_middleware_deploy(request):
             
     middleware_req = request.POST.get('middleware', '')
     logging.info(data)
-    #get data from page, and  write text for deploy scripts
+    #get data from page, and  write text for cloudops scripts
     if('weblogic' in middleware_req):
         welogic_deploy(data)
+    elif('tomcat' in middleware_req):
+        tomcat_deploy(data)
     
     return HttpResponse(u'部署完成')
 
@@ -76,7 +79,7 @@ def deploy_middleware_deploy_reset(request):
                 index.append(list_index)
                 data.append({list_key:value})            
             
-    #get data from page, and  write text for deploy scripts
+    #get data from page, and  write text for cloudops scripts
     for info in data:
         password_u = app_user.objects.filter(host_id = info['host_id'],username=info['username']).values('password')
         if(password_u):            
@@ -262,7 +265,7 @@ def addproject(request):
     vhost.objects.bulk_create(vhosts)
     app_user.objects.bulk_create(app_users)
     
-    #establish trust for deploy server and create deploy user 
+    #establish trust for cloudops server and create cloudops user 
     for host in vhosts:
         host_name = host.vhost_name
         host_ip = host.host_ip
@@ -469,7 +472,7 @@ def getlog_deploy_log(request):
     
     password_user = password_requser[0]['password']
     logging.info(password_user)
-    result = ssh2_deploy_log(host_ip, username, password_user, r"cd deploy/scripts;set a=`wc -l deploy.log | awk '{print $1}'`;echo ${a};sed -n "+str(linenumber)+",${a}p deploy.log")
+    result = ssh2_deploy_log(host_ip, username, password_user, r"cd cloudops/scripts;set a=`wc -l cloudops.log | awk '{print $1}'`;echo ${a};sed -n "+str(linenumber)+",${a}p cloudops.log")
     
     result = result.split('\n')
     linenumber = int(result[0])
@@ -539,7 +542,7 @@ def project_user_instance(request):
                     ssh2_deploy(host_ip, username, password, r'cdbin;sh '+ops_req+'allsrv.sh 2>&1 &;')
                     sleep(30)
                 else:                
-                    sftp2(host_ip, username, password, '/app/scripts/deploy/instance.sh', '/tmp/instance.sh')
+                    sftp2(host_ip, username, password, '/app/scripts/cloudops/instance.sh', '/tmp/instance.sh')
                     result = ssh2_deploy(host_ip, username, password, r'sh /tmp/instance.sh;')
                     ssh2_deploy(host_ip, username, password, r'rm -fr /tmp/instance.sh;')
                     for instance in result:

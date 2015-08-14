@@ -32,6 +32,7 @@ class application(models.Model):
     create_date = models.DateField(verbose_name = "安装时间", null=True,blank=True)
     status = models.CharField(verbose_name = "部署状态",max_length=20,null=True,blank=True)
     primary = models.CharField(verbose_name = "部署主机",max_length=20,null=True,blank=True)
+    version_num=models.CharField(verbose_name = "version",max_length=50,null=True,blank=True)
     class Meta:
         managed = True
         verbose_name = "应用"
